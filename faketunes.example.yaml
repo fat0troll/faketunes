@@ -1,0 +1,10 @@
+paths:
+  source: ./src         # Source directory with FLAC music library
+  destination: ./dest/  # Destination directory for the virtual FS: 
+                        # the ALACS will be in the directory "./Music" inside
+faketunes:
+  log_level: debug      # Log level
+  cache_size: 8192      # Cache size in megabytes
+
+transcoding:
+  parallel: 4           # Maximum amount of parallel transcodings
