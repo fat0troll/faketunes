@@ -10,7 +10,7 @@ Let's assume you have a music library of FLACs with different sample rates and b
 /library/Artist/Album/01 - Track Name.flac
 ```
 
-(this is the default music library structure for [beets](https://beets.io/).
+(this is the default music library structure for [beets](https://beets.io/)).
 
 Let's also assume you have an iPod classic with the original firmware and you want to sync your library to it. But you also don't want to convert all your huge library into other directory for iTunes to consume, taking twice as much space for your music library collection and duplicating files.
 
