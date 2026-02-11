@@ -40,6 +40,7 @@ func New() (*Config, error) {
 	}
 
 	config := new(Config)
+
 	err = yaml.Unmarshal(rawConfig, config)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w (%w)", ErrConfiguration, ErrCantParseConfigFile, err)

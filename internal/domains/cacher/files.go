@@ -2,6 +2,7 @@ package cacher
 
 import (
 	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -31,7 +32,7 @@ func (c *Cacher) getFile(sourcePath string) (*models.CacheItem, error) {
 
 	keyData := fmt.Sprintf("%s:%d", sourcePath, sourceFileInfo.ModTime().UnixNano())
 	hash := md5.Sum([]byte(keyData))
-	cacheKey := fmt.Sprintf("%x", hash)
+	cacheKey := hex.EncodeToString(hash[:])
 	cacheFilePath := filepath.Join(c.cacheDir, cacheKey+".m4a")
 
 	c.itemsMutex.Lock()
@@ -73,6 +74,7 @@ func (c *Cacher) getFile(sourcePath string) (*models.CacheItem, error) {
 	// File does not exist on disk, need to transcode.
 	// Register in the queue
 	c.transcoder.QueueChannel() <- struct{}{}
+
 	defer func() {
 		<-c.transcoder.QueueChannel()
 	}()
@@ -94,7 +96,7 @@ func (c *Cacher) getFile(sourcePath string) (*models.CacheItem, error) {
 
 	c.updateCachedStat(sourcePath, size)
 	// TODO: run cleanup on inotify events.
-	// c.cleanup()
+	c.cleanup()
 
 	return item, nil
 }

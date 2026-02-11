@@ -52,11 +52,11 @@ func (t *Transcoder) Convert(sourcePath, destinationPath string) (int64, error) 
 
 	analyzeOutput, err := sourceAnalyzeCmd.Output()
 	if err == nil {
-		// Investiage bit depth and sample rate from ffprobe output.
+		// Investigate bit depth and sample rate from ffprobe output.
 		// We need that to make sure we don't oversample files that are lower
 		// than the default sample rate and bit depth.
-		lines := strings.Split(strings.TrimSpace(string(analyzeOutput)), "\n")
-		for _, line := range lines {
+		lines := strings.SplitSeq(strings.TrimSpace(string(analyzeOutput)), "\n")
+		for line := range lines {
 			if strings.Contains(line, "audio") {
 				parts := strings.Split(line, ",")
 				if len(parts) >= 6 {
@@ -137,7 +137,7 @@ func (t *Transcoder) Convert(sourcePath, destinationPath string) (int64, error) 
 			"-af", "aresample=48000:resampler=soxr:precision=28",
 		)
 	} else {
-		ffmpegArgs = append(ffmpegArgs, "-ar", fmt.Sprintf("%d", sampleRate))
+		ffmpegArgs = append(ffmpegArgs, "-ar", strconv.Itoa(sampleRate))
 	}
 
 	if needsBitReduce {
@@ -151,7 +151,7 @@ func (t *Transcoder) Convert(sourcePath, destinationPath string) (int64, error) 
 	// Handle metadata copying and sort_artist filling
 	ffmpegArgs = append(ffmpegArgs,
 		"-map_metadata", "0",
-		"-metadata", fmt.Sprintf("sort_artist=%s", t.escapeMetadata(sortArtist)),
+		"-metadata", "sort_artist="+t.escapeMetadata(sortArtist),
 		"-write_id3v2", "1",
 		"-id3v2_version", "3",
 		destinationPath,
@@ -165,7 +165,9 @@ func (t *Transcoder) Convert(sourcePath, destinationPath string) (int64, error) 
 	).Debug("FFMpeg parameters")
 
 	ffmpeg := exec.Command("ffmpeg", ffmpegArgs...)
+
 	var stderr bytes.Buffer
+
 	ffmpeg.Stderr = &stderr
 
 	if err := ffmpeg.Run(); err != nil {

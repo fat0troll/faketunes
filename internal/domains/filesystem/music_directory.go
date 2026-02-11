@@ -34,7 +34,7 @@ var (
 )
 
 func (d *MusicDir) Getattr(ctx context.Context, f fs.FileHandle, out *fuse.AttrOut) syscall.Errno {
-	out.Mode = fuse.S_IFDIR | 0755
+	out.Mode = fuse.S_IFDIR | 0o755
 	out.Nlink = 2 // Minimum . and ..
 	out.Ino = d.StableAttr().Ino
 	out.Size = 4096
@@ -77,6 +77,7 @@ func (d *MusicDir) Getxattr(ctx context.Context, attr string, dest []byte) (uint
 		if len(dest) > 0 {
 			return 0, 0
 		}
+
 		return 0, 0
 	default:
 		return 0, syscall.ENODATA
@@ -113,7 +114,7 @@ func (d *MusicDir) Create(ctx context.Context, name string, flags uint32, mode u
 			},
 		)
 
-		out.Mode = fuse.S_IFREG | 0644
+		out.Mode = fuse.S_IFREG | 0o644
 		out.Nlink = 1
 		out.Ino = ch.StableAttr().Ino
 		out.Size = 0
@@ -144,7 +145,7 @@ func (d *MusicDir) Lookup(ctx context.Context, name string, out *fuse.EntryOut) 
 				},
 			)
 
-			out.Mode = fuse.S_IFREG | 0444
+			out.Mode = fuse.S_IFREG | 0o444
 			out.Nlink = 1
 			out.Ino = ch.StableAttr().Ino
 
@@ -165,6 +166,7 @@ func (d *MusicDir) Lookup(ctx context.Context, name string, out *fuse.EntryOut) 
 
 	// Check real file or directory
 	fullPath := filepath.Join(d.path, name)
+
 	info, err := os.Stat(fullPath)
 	if err != nil {
 		return nil, syscall.ENOENT
@@ -179,7 +181,7 @@ func (d *MusicDir) Lookup(ctx context.Context, name string, out *fuse.EntryOut) 
 			},
 		)
 
-		out.Mode = fuse.S_IFDIR | 0755
+		out.Mode = fuse.S_IFDIR | 0o755
 		out.Nlink = 2
 		out.Ino = ch.StableAttr().Ino
 		out.Size = 4096
@@ -201,9 +203,9 @@ func (d *MusicDir) Lookup(ctx context.Context, name string, out *fuse.EntryOut) 
 	)
 
 	if isMeta {
-		out.Mode = fuse.S_IFREG | 0644
+		out.Mode = fuse.S_IFREG | 0o644
 	} else {
-		out.Mode = fuse.S_IFREG | 0444
+		out.Mode = fuse.S_IFREG | 0o444
 	}
 
 	out.Nlink = 1
@@ -224,12 +226,12 @@ func (d *MusicDir) Readdir(ctx context.Context) (fs.DirStream, syscall.Errno) {
 
 	dirEntries = append(dirEntries, fuse.DirEntry{
 		Name: ".",
-		Mode: fuse.S_IFDIR | 0755,
+		Mode: fuse.S_IFDIR | 0o755,
 		Ino:  d.StableAttr().Ino,
 	})
 	dirEntries = append(dirEntries, fuse.DirEntry{
 		Name: "..",
-		Mode: fuse.S_IFDIR | 0755,
+		Mode: fuse.S_IFDIR | 0o755,
 		Ino:  1, // Parent (root) inode
 	})
 
@@ -249,19 +251,19 @@ func (d *MusicDir) Readdir(ctx context.Context) (fs.DirStream, syscall.Errno) {
 			continue
 		}
 
-		mode := fuse.S_IFREG | 0444
+		mode := fuse.S_IFREG | 0o444
 		if entry.IsDir() {
-			mode = fuse.S_IFDIR | 0755
+			mode = fuse.S_IFDIR | 0o755
 		}
 
 		// Convert .flac to .m4a in directory listing
 		if strings.HasSuffix(strings.ToLower(name), ".flac") {
 			name = name[:len(name)-5] + ".m4a"
 			if !d.f.isiTunesMetadata(name) {
-				mode = fuse.S_IFREG | 0644
+				mode = fuse.S_IFREG | 0o644
 			}
 		} else if !d.f.isiTunesMetadata(name) {
-			mode = fuse.S_IFREG | 0644
+			mode = fuse.S_IFREG | 0o644
 		}
 
 		dirEntries = append(dirEntries, fuse.DirEntry{

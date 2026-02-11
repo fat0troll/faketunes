@@ -31,7 +31,7 @@ func (f *MusicFile) Getattr(ctx context.Context, fh fs.FileHandle, out *fuse.Att
 		metaPath := filepath.Join(f.f.metadataDir, f.virtualName)
 
 		if info, err := os.Stat(metaPath); err == nil {
-			out.Mode = fuse.S_IFREG | 0644
+			out.Mode = fuse.S_IFREG | 0o644
 			out.Nlink = 1
 			out.Ino = f.StableAttr().Ino
 			out.Size = uint64(info.Size())
@@ -40,7 +40,7 @@ func (f *MusicFile) Getattr(ctx context.Context, fh fs.FileHandle, out *fuse.Att
 			out.Ctime = out.Mtime
 			out.Blocks = (out.Size + 511) / 512
 		} else {
-			out.Mode = fuse.S_IFREG | 0644
+			out.Mode = fuse.S_IFREG | 0o644
 			out.Nlink = 1
 			out.Ino = f.StableAttr().Ino
 			out.Size = 0
@@ -53,7 +53,7 @@ func (f *MusicFile) Getattr(ctx context.Context, fh fs.FileHandle, out *fuse.Att
 		return 0
 	}
 
-	out.Mode = fuse.S_IFREG | 0444
+	out.Mode = fuse.S_IFREG | 0o444
 	out.Nlink = 1
 	out.Ino = f.StableAttr().Ino
 	out.Blocks = 1
@@ -76,7 +76,7 @@ func (f *MusicFile) Setattr(ctx context.Context, fh fs.FileHandle, in *fuse.SetA
 	if f.isMetaFile {
 		metaPath := filepath.Join(f.f.metadataDir, f.virtualName)
 		if info, err := os.Stat(metaPath); err == nil {
-			out.Mode = fuse.S_IFREG | 0644
+			out.Mode = fuse.S_IFREG | 0o644
 			out.Nlink = 1
 			out.Ino = f.StableAttr().Ino
 			out.Size = uint64(info.Size())
@@ -85,7 +85,7 @@ func (f *MusicFile) Setattr(ctx context.Context, fh fs.FileHandle, in *fuse.SetA
 			out.Ctime = out.Mtime
 			out.Blocks = (out.Size + 511) / 512
 		} else {
-			out.Mode = fuse.S_IFREG | 0644
+			out.Mode = fuse.S_IFREG | 0o644
 			out.Nlink = 1
 			out.Ino = f.StableAttr().Ino
 			out.Size = 0
@@ -105,10 +105,11 @@ func (f *MusicFile) Open(ctx context.Context, flags uint32) (fh fs.FileHandle, f
 	if f.isMetaFile {
 		metaPath := filepath.Join(f.f.metadataDir, f.virtualName)
 
-		file, err := os.OpenFile(metaPath, int(flags), 0644)
+		file, err := os.OpenFile(metaPath, int(flags), 0o644)
 		if err != nil && os.IsNotExist(err) {
 			file, err = os.Create(metaPath)
 		}
+
 		if err != nil {
 			return nil, 0, syscall.EIO
 		}

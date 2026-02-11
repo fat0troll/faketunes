@@ -1,0 +1,44 @@
+version: "2"
+run:
+  tests: false
+linters:
+  default: all
+  disable:
+    - revive
+    - noinlineerr
+    - mnd
+    - tagliatelle
+    - ireturn
+    - godox
+    - exhaustruct
+    - depguard
+  settings:
+    wsl_v5:
+      allow-first-in-block: true
+      allow-whole-block: false
+      branch-max-lines: 2
+    lll:
+      line-length: 120
+    staticcheck:
+      checks:
+        - -SA1029
+    varnamelen:
+      ignore-decls:
+        - tx *sqlx.Tx
+    wrapcheck:
+      ignore-sig-regexps:
+        - \.Write\(
+        - \.WriteString\(
+        - \.WriteJSON\(
+        - \.WriteHTML\(
+        - \.Redirect\(
+        - \.Error\(
+        - \.ErrorV0\(
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+formatters:
+  enable:
+    - gofmt
+    - gofumpt
+    - goimports

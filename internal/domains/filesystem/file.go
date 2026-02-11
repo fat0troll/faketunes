@@ -2,6 +2,7 @@ package filesystem
 
 import (
 	"context"
+	"errors"
 	"io"
 	"os"
 	"sync"
@@ -33,7 +34,7 @@ func (fi *File) Read(ctx context.Context, dest []byte, off int64) (fuse.ReadResu
 	}
 
 	n, err := fi.file.Read(dest)
-	if err != nil && err != io.EOF {
+	if err != nil && !errors.Is(err, io.EOF) {
 		return nil, syscall.EIO
 	}
 

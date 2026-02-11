@@ -35,7 +35,7 @@ func (f *FS) prepareDirectories() error {
 
 	// Create the structure for the virtual filesystem.
 	for _, dir := range []string{f.destinationDir, f.cacheDir, f.metadataDir} {
-		if err := os.MkdirAll(dir, 0755); err != nil {
+		if err := os.MkdirAll(dir, 0o755); err != nil {
 			f.app.Logger().WithField("path", dir).Error("Operation on directory was unsuccessful")
 
 			return fmt.Errorf("%w: %w (%w)", ErrFilesystem, ErrFailedToCreateDestinationDirectory, err)

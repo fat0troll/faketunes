@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"runtime"
+	"strconv"
 	"sync"
 
 	"github.com/sirupsen/logrus"
@@ -34,6 +35,7 @@ func (a *App) Logger() *logrus.Entry {
 
 func New(ctx context.Context) *App {
 	var m runtime.MemStats
+
 	runtime.ReadMemStats(&m)
 
 	app := new(App)
@@ -48,7 +50,7 @@ func New(ctx context.Context) *App {
 	app.logger = logger.WithContext(ctx).WithFields(logrus.Fields{
 		"memalloc": fmt.Sprintf("%dMB", m.Alloc/1024/1024),
 		"memsys":   fmt.Sprintf("%dMB", m.Sys/1024/1024),
-		"numgc":    fmt.Sprintf("%d", m.NumGC),
+		"numgc":    strconv.FormatUint(uint64(m.NumGC), 10),
 	})
 
 	app.ctx = ctx

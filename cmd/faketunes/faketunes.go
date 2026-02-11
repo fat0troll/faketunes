@@ -46,7 +46,9 @@ func main() {
 	// CTRL+C handler.
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt)
+
 	shutdownDone := make(chan bool, 1)
+
 	go func() {
 		signalThing := <-interrupt
 		if signalThing == syscall.SIGTERM || signalThing == syscall.SIGINT {

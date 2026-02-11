@@ -50,7 +50,7 @@ func (r *RootDirectory) Create(
 			},
 		)
 
-		out.Mode = fuse.S_IFREG | 0644
+		out.Mode = fuse.S_IFREG | 0o644
 		out.Nlink = 1
 		out.Ino = ch.StableAttr().Ino
 		out.Size = 0
@@ -77,7 +77,7 @@ func (r *RootDirectory) Lookup(ctx context.Context, name string, out *fuse.Entry
 			},
 		)
 
-		out.Mode = fuse.S_IFREG | 0644
+		out.Mode = fuse.S_IFREG | 0o644
 		out.Nlink = 1
 		out.Ino = ch.StableAttr().Ino
 
@@ -114,7 +114,7 @@ func (r *RootDirectory) Lookup(ctx context.Context, name string, out *fuse.Entry
 				},
 			)
 
-			out.Mode = fuse.S_IFREG | 0444
+			out.Mode = fuse.S_IFREG | 0o444
 			out.Nlink = 1
 			out.Ino = ch.StableAttr().Ino
 
@@ -135,6 +135,7 @@ func (r *RootDirectory) Lookup(ctx context.Context, name string, out *fuse.Entry
 
 	// Check real file or directory
 	fullPath := filepath.Join(r.f.sourceDir, name)
+
 	info, err := os.Stat(fullPath)
 	if err != nil {
 		return nil, syscall.ENOENT
@@ -146,7 +147,7 @@ func (r *RootDirectory) Lookup(ctx context.Context, name string, out *fuse.Entry
 			Ino:  r.f.nextInode(),
 		})
 
-		out.Mode = fuse.S_IFDIR | 0755
+		out.Mode = fuse.S_IFDIR | 0o755
 		out.Nlink = 2 // Minimum . and ..
 		out.Ino = ch.StableAttr().Ino
 		out.Size = 4096
@@ -166,9 +167,9 @@ func (r *RootDirectory) Lookup(ctx context.Context, name string, out *fuse.Entry
 	})
 
 	if isMeta {
-		out.Mode = fuse.S_IFREG | 0644
+		out.Mode = fuse.S_IFREG | 0o644
 	} else {
-		out.Mode = fuse.S_IFREG | 0444
+		out.Mode = fuse.S_IFREG | 0o444
 	}
 
 	out.Nlink = 1
@@ -190,12 +191,12 @@ func (r *RootDirectory) Readdir(ctx context.Context) (fs.DirStream, syscall.Errn
 	// Always include . and .. first
 	dirEntries = append(dirEntries, fuse.DirEntry{
 		Name: ".",
-		Mode: fuse.S_IFDIR | 0755,
+		Mode: fuse.S_IFDIR | 0o755,
 		Ino:  1, // Root inode
 	})
 	dirEntries = append(dirEntries, fuse.DirEntry{
 		Name: "..",
-		Mode: fuse.S_IFDIR | 0755,
+		Mode: fuse.S_IFDIR | 0o755,
 		Ino:  1,
 	})
 
@@ -205,6 +206,7 @@ func (r *RootDirectory) Readdir(ctx context.Context) (fs.DirStream, syscall.Errn
 		r.f.app.Logger().WithError(err).WithField("path", r.f.sourceDir).Error(
 			"Error reading directory",
 		)
+
 		return fs.NewListDirStream(dirEntries), 0
 	}
 
@@ -215,9 +217,9 @@ func (r *RootDirectory) Readdir(ctx context.Context) (fs.DirStream, syscall.Errn
 			continue
 		}
 
-		mode := fuse.S_IFREG | 0444
+		mode := fuse.S_IFREG | 0o444
 		if entry.IsDir() {
-			mode = fuse.S_IFDIR | 0755
+			mode = fuse.S_IFDIR | 0o755
 		}
 
 		// Convert .flac to .m4a in directory listing
@@ -225,7 +227,7 @@ func (r *RootDirectory) Readdir(ctx context.Context) (fs.DirStream, syscall.Errn
 			name = name[:len(name)-5] + ".m4a"
 		}
 
-		mode = fuse.S_IFREG | 0644
+		mode = fuse.S_IFREG | 0o644
 
 		dirEntries = append(dirEntries, fuse.DirEntry{
 			Name: name,
@@ -246,7 +248,7 @@ func (r *RootDirectory) Getattr(
 	ctx context.Context, f fs.FileHandle, out *fuse.AttrOut,
 ) syscall.Errno {
 	// Set basic directory attributes
-	out.Mode = fuse.S_IFDIR | 0755
+	out.Mode = fuse.S_IFDIR | 0o755
 
 	// Set nlink to at least 2 (for . and ..)
 	out.Nlink = 2

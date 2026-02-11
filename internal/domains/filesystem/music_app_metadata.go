@@ -30,7 +30,7 @@ var (
 func (m *MusicAppMetadataFile) Getattr(ctx context.Context, fh fs.FileHandle, out *fuse.AttrOut) syscall.Errno {
 	info, err := os.Stat(m.path)
 	if err != nil {
-		out.Mode = fuse.S_IFREG | 0644
+		out.Mode = fuse.S_IFREG | 0o644
 		out.Nlink = 1
 		out.Ino = m.StableAttr().Ino
 		out.Size = 0
@@ -57,7 +57,7 @@ func (m *MusicAppMetadataFile) Getattr(ctx context.Context, fh fs.FileHandle, ou
 func (m *MusicAppMetadataFile) Setattr(ctx context.Context, fh fs.FileHandle, in *fuse.SetAttrIn, out *fuse.AttrOut) syscall.Errno {
 	info, err := os.Stat(m.path)
 	if err != nil {
-		out.Mode = fuse.S_IFREG | 0644
+		out.Mode = fuse.S_IFREG | 0o644
 		out.Nlink = 1
 		out.Ino = m.StableAttr().Ino
 		out.Size = 0
@@ -90,7 +90,7 @@ func (m *MusicAppMetadataFile) Create(ctx context.Context, name string, flags ui
 		Ino:  m.f.nextInode(),
 	})
 
-	out.Mode = fuse.S_IFREG | 0644
+	out.Mode = fuse.S_IFREG | 0o644
 	out.Nlink = 1
 	out.Ino = ch.StableAttr().Ino
 	out.Size = 0
@@ -104,12 +104,12 @@ func (m *MusicAppMetadataFile) Create(ctx context.Context, name string, flags ui
 
 func (m *MusicAppMetadataFile) Open(ctx context.Context, flags uint32) (fh fs.FileHandle, fuseFlags uint32, errno syscall.Errno) {
 	if _, err := os.Stat(m.path); os.IsNotExist(err) {
-		if err := os.WriteFile(m.path, []byte{}, 0644); err != nil {
+		if err := os.WriteFile(m.path, []byte{}, 0o644); err != nil {
 			return nil, 0, syscall.EIO
 		}
 	}
 
-	file, err := os.OpenFile(m.path, int(flags), 0644)
+	file, err := os.OpenFile(m.path, int(flags), 0o644)
 	if err != nil {
 		return nil, 0, syscall.EIO
 	}
@@ -135,6 +135,7 @@ func (m *MusicAppMetadataFile) Unlink(ctx context.Context, name string) syscall.
 	if err := os.Remove(m.path); err != nil {
 		return syscall.ENOENT
 	}
+
 	return 0
 }
 
