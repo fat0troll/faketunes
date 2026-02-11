@@ -2,7 +2,6 @@ package filesystem
 
 import (
 	"context"
-	"log"
 	"os"
 	"path/filepath"
 	"syscall"
@@ -123,10 +122,13 @@ func (f *MusicFile) Open(ctx context.Context, flags uint32) (fh fs.FileHandle, f
 
 	entry, err := f.f.cacher.GetFileDTO(f.sourcePath)
 	if err != nil {
-		log.Printf("Failed to convert %s to ALAC: %v", filepath.Base(f.sourcePath), err)
+		f.f.app.Logger().WithError(err).WithField("source file", f.sourcePath).
+			WithError(err).Error("Failed to convert file to cache")
 
 		return nil, 0, syscall.EIO
 	}
+
+	f.f.app.Logger().WithField("path", entry.Path).Debug("Opening cached file")
 
 	file, err := os.Open(entry.Path)
 	if err != nil {

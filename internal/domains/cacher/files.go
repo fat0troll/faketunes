@@ -18,6 +18,8 @@ func (c *Cacher) GetFileDTO(sourcePath string) (*dto.CacheItem, error) {
 		return nil, fmt.Errorf("%w: %w (%w)", ErrCacher, ErrFailedToGetSourceFile, err)
 	}
 
+	c.app.Logger().WithField("item", item).Debug("Retrieved cache item")
+
 	return models.CacheItemModelToDTO(item), nil
 }
 
@@ -32,8 +34,8 @@ func (c *Cacher) getFile(sourcePath string) (*models.CacheItem, error) {
 	cacheKey := fmt.Sprintf("%x", hash)
 	cacheFilePath := filepath.Join(c.cacheDir, cacheKey+".m4a")
 
-	c.cacheMutex.Lock()
-	defer c.cacheMutex.Unlock()
+	c.itemsMutex.Lock()
+	defer c.itemsMutex.Unlock()
 
 	// Check if file information exists in cache
 	if item, ok := c.items[cacheKey]; ok {
@@ -92,7 +94,7 @@ func (c *Cacher) getFile(sourcePath string) (*models.CacheItem, error) {
 
 	c.updateCachedStat(sourcePath, size)
 	// TODO: run cleanup on inotify events.
-	c.cleanup()
+	// c.cleanup()
 
 	return item, nil
 }

@@ -12,6 +12,9 @@ import (
 
 // getStat returns file size without triggering conversion (for ls/stat)
 func (c *Cacher) GetStat(sourcePath string) (int64, error) {
+	c.statMutex.RLock()
+	defer c.statMutex.RUnlock()
+
 	// First check cache
 	if size, ok := c.getCachedStat(sourcePath); ok {
 		return size, nil
@@ -43,8 +46,8 @@ func (c *Cacher) GetStat(sourcePath string) (int64, error) {
 
 // updateCachedStat updates the stat cache
 func (c *Cacher) updateCachedStat(sourcePath string, size int64) {
-	c.cacheMutex.Lock()
-	defer c.cacheMutex.Unlock()
+	c.statMutex.Lock()
+	defer c.statMutex.Unlock()
 
 	c.stat[sourcePath] = &models.CacherStat{
 		Size:    size,
@@ -54,8 +57,8 @@ func (c *Cacher) updateCachedStat(sourcePath string, size int64) {
 
 // getCachedStat returns cached file stats
 func (c *Cacher) getCachedStat(sourcePath string) (int64, bool) {
-	c.cacheMutex.RLock()
-	defer c.cacheMutex.RUnlock()
+	c.statMutex.RLock()
+	defer c.statMutex.RUnlock()
 
 	if stat, ok := c.stat[sourcePath]; ok {
 		return stat.Size, true

@@ -20,17 +20,18 @@ type Cacher struct {
 	transcoder domains.Transcoder
 
 	cacheDir    string
-	cacheMutex  sync.RWMutex
 	currentSize int64
 	maxSize     int64
 	items       map[string]*models.CacheItem
+	itemsMutex  sync.RWMutex
 	stat        map[string]*models.CacherStat
+	statMutex   sync.RWMutex
 }
 
 func New(app *application.App) *Cacher {
 	return &Cacher{
 		app:      app,
-		cacheDir: app.Config().Paths.Destination + "./.cache",
+		cacheDir: app.Config().Paths.Destination + "/.cache",
 		maxSize:  app.Config().FakeTunes.CacheSize * 1024 * 1024,
 		items:    make(map[string]*models.CacheItem, 0),
 		stat:     make(map[string]*models.CacherStat, 0),
