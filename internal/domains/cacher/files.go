@@ -36,13 +36,13 @@ func (c *Cacher) getFile(sourcePath string) (*models.CacheItem, error) {
 	cacheFilePath := filepath.Join(c.cacheDir, cacheKey+".m4a")
 
 	c.itemsMutex.Lock()
-	defer c.itemsMutex.Unlock()
 
 	// Check if file information exists in cache
 	if item, ok := c.items[cacheKey]; ok {
-		if _, err := os.Stat(item.Path); err != nil {
+		if _, err := os.Stat(item.Path); err == nil {
 			// File exists in cache and on disk
 			item.Updated = time.Now().UTC()
+			c.itemsMutex.Unlock()
 
 			c.updateCachedStat(sourcePath, item.Size)
 
@@ -64,6 +64,7 @@ func (c *Cacher) getFile(sourcePath string) (*models.CacheItem, error) {
 			}
 			c.items[cacheKey] = item
 			c.currentSize += cachedFileInfo.Size()
+			c.itemsMutex.Unlock()
 
 			c.updateCachedStat(sourcePath, item.Size)
 
@@ -82,6 +83,7 @@ func (c *Cacher) getFile(sourcePath string) (*models.CacheItem, error) {
 	// Convert file
 	size, err := c.transcoder.Convert(sourcePath, cacheFilePath)
 	if err != nil {
+		c.itemsMutex.Unlock()
 		return nil, fmt.Errorf("%w: %w (%w)", ErrCacher, ErrFailedToTranscodeFile, err)
 	}
 
@@ -93,6 +95,7 @@ func (c *Cacher) getFile(sourcePath string) (*models.CacheItem, error) {
 	}
 	c.items[cacheKey] = item
 	c.currentSize += size
+	c.itemsMutex.Unlock()
 
 	c.updateCachedStat(sourcePath, size)
 	// TODO: run cleanup on inotify events.

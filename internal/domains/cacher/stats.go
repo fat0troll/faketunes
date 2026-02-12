@@ -13,10 +13,6 @@ import (
 
 // getStat returns file size without triggering conversion (for ls/stat).
 func (c *Cacher) GetStat(sourcePath string) (int64, error) {
-	c.statMutex.RLock()
-	defer c.statMutex.RUnlock()
-
-	// First check cache
 	if size, ok := c.getCachedStat(sourcePath); ok {
 		return size, nil
 	}
