@@ -16,6 +16,7 @@ type App struct {
 	ctx    context.Context
 	logger *logrus.Entry
 	config *configuration.Config
+	wg     *sync.WaitGroup
 
 	domains      map[string]domains.Domain
 	domainsMutex sync.RWMutex
@@ -117,4 +118,12 @@ func (a *App) StartDomains() error {
 	}
 
 	return nil
+}
+
+func (a *App) RegisterGlobalWaitGroup(wg *sync.WaitGroup) {
+	a.wg = wg
+}
+
+func (a *App) GetGlobalWaitGroup() *sync.WaitGroup {
+	return a.wg
 }

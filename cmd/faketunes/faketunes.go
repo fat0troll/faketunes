@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 
 	"source.hodakov.me/hdkv/faketunes/internal/application"
@@ -36,6 +37,15 @@ func main() {
 		app.Logger().Fatal(err)
 	}
 
+	// CTRL+C handler.
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(
+		interrupt, syscall.SIGINT, syscall.SIGTERM,
+	)
+
+	var wg sync.WaitGroup
+	app.RegisterGlobalWaitGroup(&wg)
+
 	err = app.StartDomains()
 	if err != nil {
 		app.Logger().Fatal(err)
@@ -43,24 +53,17 @@ func main() {
 
 	app.Logger().Info("Started faketunes")
 
-	// CTRL+C handler.
-	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt)
-
-	shutdownDone := make(chan bool, 1)
-
 	go func() {
 		signalThing := <-interrupt
-		if signalThing == syscall.SIGTERM || signalThing == syscall.SIGINT {
-			app.Logger().WithField("signal", signalThing.String()).
-				Info("Got terminating signal, shutting down...")
+		app.Logger().WithField("signal", signalThing.String()).
+			Info("Got terminating signal, shutting down...")
 
-			cancel()
-
-			shutdownDone <- true
-		}
+		cancel()
 	}()
 
-	<-shutdownDone
+	// Wait for all domains to finish their cleanup
+	wg.Wait()
+
+	app.Logger().Info("Faketunes shutdown complete")
 	os.Exit(0)
 }

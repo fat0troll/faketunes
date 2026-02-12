@@ -58,9 +58,14 @@ func (f *FS) Start() error {
 		return fmt.Errorf("%w: %w (%w)", ErrFilesystem, ErrFailedToPrepareDirectories, err)
 	}
 
-	go func() {
+	wg := f.app.GetGlobalWaitGroup()
+	if wg == nil {
+		return fmt.Errorf("%w: %w (%s)", ErrFilesystem, ErrFailedToGetWaitGroup, "got nil waitgroup")
+	}
+
+	wg.Go(func() {
 		f.mount()
-	}()
+	})
 
 	return nil
 }

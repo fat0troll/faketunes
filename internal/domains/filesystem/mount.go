@@ -43,10 +43,6 @@ func (f *FS) mount() {
 	}
 	defer server.Unmount()
 
-	select {
-	case <-f.app.Context().Done():
-		return
-	default:
-		server.Wait()
-	}
+	<-f.app.Context().Done()
+	f.app.Logger().Debug("Application context cancelled, unmounting FUSE server...")
 }
